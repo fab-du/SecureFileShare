@@ -1,0 +1,83 @@
+<!--- liste loans von user emprunter key --->
+<h3>Keys to friends</h3>
+
+<table id="loans_from_user"  class="table table-bordered ">
+  <tr>
+    <th> Friends</th>
+    <th> Keys</th>
+    <th> Delete</th>
+  </tr>
+  <%= "Sie besitzen keinen Schlüssel ausgeliehen" if @loans_from_user.empty?  %>
+
+  <%  @loans_from_user.each do |loan|%>
+      <tr>
+        <td><%= "#{loan.friend.name} (#{loan.friend.email })"%></td>
+        <td><%= "#{rsa_decrypt(get_private_key,loan.key.value )} (#{rsa_decrypt(get_private_key,loan.key.remark) if loan.key.remark})"%></td>
+        <td><%= link_to "delete" ,loan_path(loan),:method => :delete %></td>
+      </tr>
+  <% end %>
+</table>
+
+<h3>Keys from friends</h3>
+<!--   zu  user  ausgeliehene  schlüssels -->
+<table id="loans_to_user" class="table table-bordered ">
+  <tr>
+    <th> Friends</th>
+    <th> Keys</th>
+  </tr>
+  <%= "Es wurde Ihnen  keinen Schlüssel ausgeliehen" if @loans_to_user.empty?  %>
+  <%  @loans_to_user.each do |loan|%>
+      <tr>
+        <td><%= "#{loan.user.name} (#{loan.user.email})"%></td>
+        <td><%="#{rsa_decrypt(get_private_key,loan.key_value )} (#{rsa_decrypt(get_private_key,loan.remark ) if loan.remark})"%></td>
+
+      </tr>
+  <% end %>
+</table>
+<!--  button to add -->
+<!--button id="new_key">New Key</button> -->
+<%= form_for @loan , :html=>{:class=>"form-horizontal",:role=>"form",:onsubmit=>"return checkForm(this)"} do |form|%>
+  <fieldset>
+    <legend>New Loan</legend>
+    <table>
+      <tr>
+        <td>Friend</td>
+       <td>
+       <%= form.select :friend_id, options_for_select(@friends.collect{|friend|  ["#{friend.name } (#{friend.email }) ",friend.id ]} )%>
+       </td>
+      </tr>
+      <tr>
+        <td>Key</td>
+        <td>
+         <%= form.select :key_id, options_for_select(@keys.collect{|key|  ["#{rsa_decrypt(get_private_key,key.value )} #{rsa_decrypt(get_private_key,key.remark) if key.remark } ", key.id] } ) %>
+        </td>
+      </tr>
+      <tr>
+        <td><%= form.submit "new loan" ,:class=>"btn btn-primary"%></td>
+      </tr>
+    </table>
+  </fieldset>
+<% end %>
+
+<style>
+    form input, form select {
+        margin-bottom:10px
+    }
+    input{
+        border-radius: 5px;
+    }
+</style>
+
+<script>
+function checkForm(form){
+
+if( form.loan_friend_id.value=="" ) {
+alert("You dont't have any Friend!");
+return false;
+}
+if (form.loan_key_id.value==""){
+alert("You don't have  any Key!");
+return false;
+}
+}
+</script>
